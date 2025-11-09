@@ -20,32 +20,38 @@ const productCreateSchema = z.object({
 
 productRouter.get("/", async (req: Request<{}, {}, {}, { category?: string }>, res: Response) => {
   const {category} = req.query
+  console.log("GET api/products/")
   if (category) {
     const products = await prisma.product.findMany({
       where: {category},
       include: { variants: true },
     })
     res.json(products)
+    console.log("Response: ", products)
   } else {
     const products = await prisma.product.findMany({
       include: { variants: true },
     })
     res.json(products)
+    console.log("Response: ", products)
   }
 })
 
 productRouter.get('/categories', async (req: Request, res: Response) => {
-  const categories = await prisma.product.findMany({
+  console.log("GET api/products/categories")
+  const categories: string[] = (await prisma.product.findMany({
     distinct: ['category'],
     select: {
       category: true
     }
-  })
-  return res.json(categories.map(category => category.category))
+  })).map(category => category.category)
+  console.log("Response: ", categories)
+  return res.json(categories)
 })
 
 productRouter.get("/:id", async (req: Request, res: Response) => {
   const {id} = req.params
+  console.log(`GET api/products/${id}`)
   const product = await prisma.product.findUnique({
     where: {
       id: parseInt(id || '0')
@@ -53,16 +59,20 @@ productRouter.get("/:id", async (req: Request, res: Response) => {
     include: { variants: true },
   })
   if (!product) {
+    console.log(`Response: Product with id ${id} not found`)
     return res.status(404).json({
       message: `Product with id ${id} not found`
     })
   }
+  console.log(`Response: `, product)
   res.json(product)
 })
 
 productRouter.post("/", async (req: Request, res: Response) => {
+  console.log("POST api/products/")
   const parsed = productCreateSchema.safeParse(req.body);
   if (!parsed.success) {
+    console.log("Response: Invalid request body")
     return res.status(400).json({
       message: "Invalid request body",
       errors: z.treeifyError(parsed.error),
@@ -81,6 +91,7 @@ productRouter.post("/", async (req: Request, res: Response) => {
     },
     include: { variants: true },
   });
+  console.log("Response: ", product)
   res.status(201).json(product)
 })
 

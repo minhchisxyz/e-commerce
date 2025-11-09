@@ -22,10 +22,9 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET','POST'],
-  allowedHeaders: ['Content-Type','Authorization']
+  allowedHeaders: ['Content-Type']
 }));
 
-// Middleware to parse JSON request bodies
 app.use(express.json());
 
 app.use('/api/products', productRouter)
